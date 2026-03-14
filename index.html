@@ -253,11 +253,24 @@
     The default center axis is x=934. JS will apply translate(GEYSER_X - 934, 0).
     Do NOT add unrelated decorations inside this group.
   -->
+<!-- CONNECTOR CHANNEL (lower pool → upper pool, curved ascending pipe) -->
+    <!-- Wide colored stroke = channel body; narrow stroke = highlight -->
+    <path d="M1030,520 Q1040,505 1040,470 "
+          fill="none" stroke="url(#connectorFill)" stroke-width="22" stroke-linecap="round" opacity="0.65"/>
+    <path d="M1030,520 Q1040,505 1040,470"
+          fill="none" stroke="#3AA8B8" stroke-width="10" stroke-linecap="round" opacity="0.2"/>
+
+    <!-- CONDUIT (upper pool → sinter cone opening, narrow vertical channel) -->
+    <path d="M1040,360 1040,355 1040,340"
+          fill="none" stroke="#2A96A8" stroke-width="18" stroke-linecap="round" opacity="0.65"/>
+    <path d="M1040,360 1040,355 1040,340"
+          fill="none" stroke="#4AB8C6" stroke-width="8"  stroke-linecap="round" opacity="0.2"/>
+
   <g id="geyser-system">
 
     <!-- LOWER WATER POOL (deep reservoir, ~200×180 px, centered ~x=937 y=620) -->
     <path d="M700,530 Q730,516 790,520 Q860,512 940,524 Q1010,518 1080,528 Q1140,522 1190,538 Q1230,552 1240,575 Q1248,605 1238,635 Q1230,660 1205,680 Q1175,698 1130,708 Q1080,716 1010,712 Q940,706 870,712 Q800,718 740,706 Q690,695 665,675 Q642,655 635,628 Q628,595 638,565 Q650,542 700,530 Z"
-          fill="url(#lowerPoolGrad)" opacity="0.92"/>
+          fill="url(#lowerPoolGrad)" opacity="1"/>
     <!-- Inner ripple layer -->
     <path d="M720,545 Q760,535 820,538 Q890,530 960,540 Q1030,534 1090,545 Q1140,555 1155,572 Q1168,595 1160,620 Q1152,645 1130,660 Q1100,675 1060,680 Q1000,685 940,680 Q880,685 820,678 Q770,670 745,655 Q725,640 720,618 Q714,592 720,568 Q724,555 720,545 Z"
           fill="url(#lowerPoolGrad)" opacity="0.3" filter="url(#waterRipple)"/>
@@ -327,16 +340,9 @@
 
     <!-- ── END AQUIFER MAGNIFICATION OVERLAY ─────────────────────── -->
 
-    <!-- CONNECTOR CHANNEL (lower pool → upper pool, curved ascending pipe) -->
-    <!-- Wide colored stroke = channel body; narrow stroke = highlight -->
-    <path d="M920,530 Q928,505 932,480 Q935,458 928,438 Q924,420 920,405"
-          fill="none" stroke="url(#connectorFill)" stroke-width="22" stroke-linecap="round" opacity="0.85"/>
-    <path d="M920,530 Q928,505 932,480 Q935,458 928,438 Q924,420 920,405"
-          fill="none" stroke="#3AA8B8" stroke-width="10" stroke-linecap="round" opacity="0.25"/>
-
     <!-- UPPER WATER POOL (shallow reservoir near surface, centered ~x=943 y=415) -->
     <path d="M845,375 Q875,360 915,365 Q955,358 990,368 Q1025,375 1042,392 Q1055,410 1050,430 Q1045,448 1025,458 Q1000,468 970,470 Q940,472 910,468 Q880,465 858,454 Q840,442 835,425 Q830,405 845,375 Z"
-          fill="url(#upperPoolGrad)" opacity="0.88"/>
+          fill="url(#upperPoolGrad)" opacity="1"/>
     <!-- Pool outline -->
     <path d="M845,375 Q875,360 915,365 Q955,358 990,368 Q1025,375 1042,392 Q1055,410 1050,430 Q1045,448 1025,458 Q1000,468 970,470 Q940,472 910,468 Q880,465 858,454 Q840,442 835,425 Q830,405 845,375 Z"
           fill="none" stroke="#4AB8C6" stroke-width="2" opacity="0.2"/>
@@ -353,12 +359,6 @@
       <circle cx="895" cy="430" r="2.5"/>
       <circle cx="975" cy="425" r="2"/>
     </g>
-
-    <!-- CONDUIT (upper pool → sinter cone opening, narrow vertical channel) -->
-    <path d="M930,372 Q934,355 930,340"
-          fill="none" stroke="#2A96A8" stroke-width="18" stroke-linecap="round" opacity="0.75"/>
-    <path d="M930,372 Q934,355 930,340"
-          fill="none" stroke="#4AB8C6" stroke-width="8"  stroke-linecap="round" opacity="0.3"/>
 
     <!-- SINTER CONE (mineral deposit mound around the vent opening) -->
     <!-- Outer cone body -->
