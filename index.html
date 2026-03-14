@@ -293,35 +293,35 @@
 
     <!-- Clip path for magnification circle (inside geyser-system so it transforms with the group) -->
     <clipPath id="aquiferMagClip">
-      <circle cx="790" cy="640" r="62"/>
+      <circle id="aquiferMagClipCircle" cx="790" cy="640" r="62"/>
     </clipPath>
 
     <!-- Large magnification circle with Porous_Rocks.png inside -->
     <!-- Dark background behind the image to ensure contrast -->
-    <circle cx="790" cy="640" r="64"
+    <circle id="aquiferMagBg" cx="790" cy="640" r="64"
             fill="#0e1a1e" opacity="0.95"/>
     <!-- The porous rocks image, clipped to circle -->
-    <image href="Porous_Rocks.png"
+    <image id="aquiferMagImage" href="Porous_Rocks.png"
            x="728" y="578" width="124" height="124"
            preserveAspectRatio="xMidYMid slice"
            clip-path="url(#aquiferMagClip)"
            opacity="1"/>
     <!-- Circle border for the magnification view -->
-    <circle cx="790" cy="640" r="63"
+    <circle id="aquiferMagBorder" cx="790" cy="640" r="63"
             fill="none" stroke="white" stroke-width="2.5" opacity="0.9"/>
 
     <!-- Small dotted circle (the "zoom origin" point in the pool) -->
-    <circle cx="890" cy="555" r="12"
+    <circle id="aquiferMagOrigin" cx="890" cy="555" r="12"
             fill="none" stroke="white" stroke-width="1.8"
             stroke-dasharray="4,3" opacity="0.85"/>
 
     <!-- External tangent lines (each tangent to BOTH circles) -->
     <!-- Tangent line 1: upper-left side -->
-    <line x1="886.3" y1="543.6" x2="770.9" y2="581.0"
+    <line id="aquiferMagTangent1" x1="886.3" y1="543.6" x2="770.9" y2="581.0"
           stroke="white" stroke-width="1.5"
           stroke-dasharray="5,4" opacity="0.7"/>
     <!-- Tangent line 2: lower-right side -->
-    <line x1="900.7" y1="560.5" x2="845.1" y2="668.4"
+    <line id="aquiferMagTangent2" x1="900.7" y1="560.5" x2="845.1" y2="668.4"
           stroke="white" stroke-width="1.5"
           stroke-dasharray="5,4" opacity="0.7"/>
 
@@ -834,6 +834,17 @@ const CONFIG = {
   BOTTOM_IMAGE: { x: 30,  y: 460, width: 350, height: 350 },
   TOP_IMAGE:    { x: 300, y: 100, width: 200, height: 300 },
 
+  // ── Porous rock magnification overlay ─────────────────────────
+  // MAG_CX / MAG_CY — center of the large magnification circle
+  // ORIGIN_CX / ORIGIN_CY — center of the small "zoom origin" dot in the pool
+  // All other geometry (tangent lines, clip circle, image) is derived automatically.
+  POROUS_MAG: {
+    MAG_CX:    710,   // large circle center X
+    MAG_CY:    610,   // large circle center Y
+    ORIGIN_CX: 880,   // zoom-origin dot center X
+    ORIGIN_CY: 555,   // zoom-origin dot center Y
+  },
+
 };
 // ================================================================
 
@@ -895,6 +906,65 @@ window.addEventListener('DOMContentLoaded', () => {
     el.setAttribute('width', TOP_IMAGE.width);
     el.setAttribute('height', TOP_IMAGE.height);
   });
+
+  // ── Apply porous rock magnification overlay ────────────────────
+  const { MAG_CX, MAG_CY, ORIGIN_CX, ORIGIN_CY } = CONFIG.POROUS_MAG;
+  const MAG_R      = 62;  // inner clip radius (fixed design value)
+  const MAG_R_BG   = 64;  // background circle radius
+  const MAG_R_BOR  = 63;  // border circle radius
+  const ORIGIN_R   = 12;  // zoom-origin dot radius
+
+  // Clip circle + background + border + image center
+  document.getElementById('aquiferMagClipCircle').setAttribute('cx', MAG_CX);
+  document.getElementById('aquiferMagClipCircle').setAttribute('cy', MAG_CY);
+  document.getElementById('aquiferMagBg').setAttribute('cx', MAG_CX);
+  document.getElementById('aquiferMagBg').setAttribute('cy', MAG_CY);
+  document.getElementById('aquiferMagBorder').setAttribute('cx', MAG_CX);
+  document.getElementById('aquiferMagBorder').setAttribute('cy', MAG_CY);
+  document.getElementById('aquiferMagOrigin').setAttribute('cx', ORIGIN_CX);
+  document.getElementById('aquiferMagOrigin').setAttribute('cy', ORIGIN_CY);
+
+  // Image: keep it centered on MAG_CX / MAG_CY
+  const imgSize = MAG_R_BG * 2;
+  const magImg = document.getElementById('aquiferMagImage');
+  magImg.setAttribute('x', MAG_CX - MAG_R_BG);
+  magImg.setAttribute('y', MAG_CY - MAG_R_BG);
+  magImg.setAttribute('width',  imgSize);
+  magImg.setAttribute('height', imgSize);
+
+  // Recompute external tangent lines between the two circles
+  // Using the external tangent formula for circles (r1, c1) and (r2, c2)
+  (function computeTangents() {
+    const r1 = MAG_R_BOR, cx1 = MAG_CX, cy1 = MAG_CY;
+    const r2 = ORIGIN_R,  cx2 = ORIGIN_CX, cy2 = ORIGIN_CY;
+    const dx = cx2 - cx1, dy = cy2 - cy1;
+    const d  = Math.hypot(dx, dy);
+    if (d < Math.abs(r1 - r2)) return; // circles nested — skip
+
+    // Angle of the line joining the centers
+    const alpha = Math.atan2(dy, dx);
+    // Angle offset for the external tangent touch points
+    const beta  = Math.acos((r1 - r2) / d);
+
+    // For each of the two tangents
+    const angles = [alpha + beta, alpha - beta];
+    const lines  = [
+      document.getElementById('aquiferMagTangent1'),
+      document.getElementById('aquiferMagTangent2'),
+    ];
+    angles.forEach((theta, i) => {
+      // Touch point on large circle
+      const tx1 = cx1 + r1 * Math.cos(theta);
+      const ty1 = cy1 + r1 * Math.sin(theta);
+      // Touch point on small circle
+      const tx2 = cx2 + r2 * Math.cos(theta);
+      const ty2 = cy2 + r2 * Math.sin(theta);
+      lines[i].setAttribute('x1', tx1.toFixed(1));
+      lines[i].setAttribute('y1', ty1.toFixed(1));
+      lines[i].setAttribute('x2', tx2.toFixed(1));
+      lines[i].setAttribute('y2', ty2.toFixed(1));
+    });
+  })();
 });
 </script>
 
