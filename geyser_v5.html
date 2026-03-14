@@ -1,0 +1,934 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Geyser Cross Section</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Source+Sans+3:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #1a1a18; display: flex; align-items: center; justify-content: center; min-height: 100vh; }
+  .poster-wrap { position: relative; width: 100vw; max-width: 1440px; aspect-ratio: 1400/900; }
+  .poster-wrap svg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+  .layer-bg     { z-index: 1; }
+  .layer-border { z-index: 2; }
+  .layer-images { z-index: 3; }
+  .layer-geyser { z-index: 4; }
+  .layer-text   { z-index: 5; }
+  svg { width: 100vw; max-width: 1400px; height: auto; display: block; }
+</style>
+</head>
+<body>
+<div class="poster-wrap">
+
+<!-- ============================================================ -->
+<!-- LAYER 1: BACKGROUND — sky, underground rock, geyser system   -->
+<!-- ============================================================ -->
+<svg class="layer-bg" viewBox="0 0 1400 900" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Sky gradient: light blue horizon → deeper blue zenith -->
+    <linearGradient id="skyGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%"   stop-color="#5BA4D9"/>
+      <stop offset="40%"  stop-color="#7BBCE6"/>
+      <stop offset="75%"  stop-color="#A8D4F0"/>
+      <stop offset="100%" stop-color="#C8E4F5"/>
+    </linearGradient>
+
+    <!-- Underground rock gradient: dark tan → near-black -->
+    <linearGradient id="groundGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%"   stop-color="#5C564E"/>
+      <stop offset="30%"  stop-color="#4A4540"/>
+      <stop offset="60%"  stop-color="#3D3935"/>
+      <stop offset="100%" stop-color="#2E2B28"/>
+    </linearGradient>
+
+    <!-- Magma body: orange → dark red -->
+    <linearGradient id="magmaGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%"   stop-color="#E8944A"/>
+      <stop offset="20%"  stop-color="#D4652E"/>
+      <stop offset="50%"  stop-color="#C94A22"/>
+      <stop offset="80%"  stop-color="#A83518"/>
+      <stop offset="100%" stop-color="#7A2210"/>
+    </linearGradient>
+
+    <!-- Magma surface shimmer (fades down into body) -->
+    <linearGradient id="magmaSurface" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%"   stop-color="#EDBE6A" stop-opacity="0.9"/>
+      <stop offset="30%"  stop-color="#E8944A" stop-opacity="0.6"/>
+      <stop offset="100%" stop-color="#D4652E" stop-opacity="0"/>
+    </linearGradient>
+
+    <!-- Lower pool: hot red at bottom → cyan at top (thermal stratification) -->
+    <linearGradient id="lowerPoolGrad" x1="0.5" y1="1" x2="0.5" y2="0">
+      <stop offset="0%"   stop-color="#C94A22"/>
+      <stop offset="12%"  stop-color="#A85A30"/>
+      <stop offset="28%"  stop-color="#6A6E5A"/>
+      <stop offset="45%"  stop-color="#2A7A88"/>
+      <stop offset="65%"  stop-color="#1E7A8C"/>
+      <stop offset="85%"  stop-color="#3AA8B8"/>
+      <stop offset="100%" stop-color="#4AB8C6"/>
+    </linearGradient>
+
+    <!-- Upper pool: cooler, shallower water (blue-cyan) -->
+    <linearGradient id="upperPoolGrad" x1="0.5" y1="1" x2="0.5" y2="0">
+      <stop offset="0%"   stop-color="#1A6E7E"/>
+      <stop offset="40%"  stop-color="#2A96A8"/>
+      <stop offset="100%" stop-color="#4AB8C6"/>
+    </linearGradient>
+
+    <!-- Geyser plume: dense water → airy mist -->
+    <linearGradient id="geyserWaterGrad" x1="0.5" y1="1" x2="0.5" y2="0">
+      <stop offset="0%"   stop-color="#2A96A8"/>
+      <stop offset="40%"  stop-color="#4AB8C6" stop-opacity="0.85"/>
+      <stop offset="70%"  stop-color="#7DD4E0" stop-opacity="0.6"/>
+      <stop offset="100%" stop-color="#B8EAF0" stop-opacity="0.3"/>
+    </linearGradient>
+
+    <!-- Connector channel: dark teal -->
+    <linearGradient id="connectorFill" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%"   stop-color="#2A96A8"/>
+      <stop offset="100%" stop-color="#1E7A8C"/>
+    </linearGradient>
+
+    <!-- Rock texture filter (coarse noise, multiply blend) -->
+    <filter id="rockNoise" x="0%" y="0%" width="100%" height="100%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.035 0.025" numOctaves="6" seed="14" result="noise"/>
+      <feColorMatrix in="noise" type="saturate" values="0" result="grayNoise"/>
+      <feBlend in="SourceGraphic" in2="grayNoise" mode="multiply"/>
+    </filter>
+
+    <!-- Fine grain overlay (soft-light blend, lighter touch) -->
+    <filter id="fineGrain" x="0%" y="0%" width="100%" height="100%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.08" numOctaves="3" seed="7" result="grain"/>
+      <feColorMatrix in="grain" type="saturate" values="0" result="grayGrain"/>
+      <feBlend in="SourceGraphic" in2="grayGrain" mode="soft-light"/>
+    </filter>
+
+    <!-- Glow for magma lava lines -->
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="6" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+
+    <!-- Soft blur for ambient glow patches -->
+    <filter id="softBlur">
+      <feGaussianBlur stdDeviation="3"/>
+    </filter>
+
+    <!-- Water ripple displacement -->
+    <filter id="waterRipple" x="-5%" y="-5%" width="110%" height="110%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.04" numOctaves="2" seed="33" result="rip"/>
+      <feDisplacementMap in="SourceGraphic" in2="rip" scale="5"/>
+    </filter>
+  </defs>
+
+  <!-- ─── SKY ────────────────────────────────────────────────────── -->
+  <rect x="0" y="0" width="1400" height="345" fill="url(#skyGrad)"/>
+
+  <!-- Cloud cluster left -->
+  <g fill="white" opacity="0.3">
+    <ellipse cx="200" cy="60" rx="90" ry="18"/>
+    <ellipse cx="250" cy="55" rx="60" ry="14"/>
+    <ellipse cx="160" cy="65" rx="50" ry="12"/>
+  </g>
+  <!-- Cloud cluster center -->
+  <g fill="white" opacity="0.2">
+    <ellipse cx="600" cy="40" rx="70" ry="12"/>
+    <ellipse cx="640" cy="35" rx="50" ry="10"/>
+  </g>
+  <!-- Faint cloud right-center -->
+  <g fill="white" opacity="0.15">
+    <ellipse cx="400" cy="90" rx="55" ry="10"/>
+  </g>
+
+  <!-- ─── UNDERGROUND ROCK ─────────────────────────────────────── -->
+  <!-- Base rock body with coarse texture -->
+  <rect x="0" y="340" width="1400" height="560" fill="url(#groundGrad)" filter="url(#rockNoise)"/>
+  <!-- Fine grain overlay for surface detail -->
+  <rect x="0" y="340" width="1400" height="560" fill="#4A4540" opacity="0.15" filter="url(#fineGrain)"/>
+
+  <!-- Sedimentary strata lines -->
+  <g opacity="0.18" fill="none" stroke-width="1.5">
+    <path d="M0,390 Q120,384 280,392 Q450,400 650,388 Q850,382 1050,394 Q1250,400 1400,392" stroke="#6A6460"/>
+    <path d="M0,440 Q180,434 360,442 Q540,450 750,438 Q960,432 1150,444 Q1300,450 1400,442" stroke="#5A5652"/>
+    <path d="M0,500 Q200,494 420,504 Q640,512 860,498 Q1080,490 1260,504 L1400,500"         stroke="#4E4A46"/>
+    <path d="M0,560 Q250,554 500,564 Q750,572 1000,558 Q1200,550 1400,562"                  stroke="#44403C"/>
+    <path d="M0,620 Q300,614 600,624 Q900,630 1200,618 L1400,622"                           stroke="#3E3A36"/>
+    <path d="M0,670 Q200,665 450,674 Q700,680 950,668 Q1200,662 1400,672"                   stroke="#383430"/>
+  </g>
+
+  <!-- Rock fracture cracks (scattered background detail) -->
+  <g stroke="#2E2B28" stroke-width="0.7" opacity="0.2" fill="none">
+    <!-- Left zone cracks -->
+    <path d="M60,370  L85,395  L72,425"/> <path d="M140,400 L165,430 L150,460"/>
+    <path d="M90,470  L115,500 L100,530"/><path d="M200,380 L220,410"/>
+    <path d="M50,540  L80,565  L65,590"/> <path d="M170,520 L195,550 L180,580"/>
+    <path d="M30,610  L55,640"/>          <path d="M240,590 L265,620 L250,650"/>
+    <!-- Center-left cracks -->
+    <path d="M350,380 L370,405 L360,435"/><path d="M420,450 L445,480"/>
+    <path d="M310,510 L335,540 L320,570"/><path d="M480,400 L500,425 L490,455"/>
+    <path d="M380,560 L405,590 L395,610"/><path d="M450,530 L470,555"/>
+    <!-- Center cracks -->
+    <path d="M600,370 L620,395"/>         <path d="M560,440 L580,465 L570,490"/>
+    <path d="M650,500 L670,525"/>         <path d="M530,570 L555,600"/>
+    <!-- Right zone cracks -->
+    <path d="M1200,380 L1225,405 L1210,430"/><path d="M1280,440 L1305,470"/>
+    <path d="M1150,500 L1175,530 L1160,555"/><path d="M1320,510 L1345,540"/>
+    <path d="M1250,570 L1275,600 L1260,625"/><path d="M1100,610 L1125,640"/>
+    <path d="M1350,590 L1375,615"/>
+  </g>
+
+  <!-- Small rock fragments -->
+  <g fill="#3D3935" opacity="0.35">
+    <!-- Left zone -->
+    <ellipse cx="70"  cy="410" rx="18" ry="7"  transform="rotate(-8,70,410)"/>
+    <ellipse cx="160" cy="470" rx="14" ry="6"  transform="rotate(12,160,470)"/>
+    <ellipse cx="40"  cy="530" rx="12" ry="5"  transform="rotate(-5,40,530)"/>
+    <ellipse cx="220" cy="440" rx="10" ry="5"  transform="rotate(18,220,440)"/>
+    <ellipse cx="120" cy="580" rx="16" ry="6"  transform="rotate(-10,120,580)"/>
+    <ellipse cx="190" cy="560" rx="11" ry="4"/>
+    <ellipse cx="80"  cy="640" rx="14" ry="5"  transform="rotate(7,80,640)"/>
+    <ellipse cx="260" cy="510" rx="9"  ry="4"  transform="rotate(-15,260,510)"/>
+    <!-- Center-left zone -->
+    <ellipse cx="340" cy="420" rx="12" ry="5"  transform="rotate(10,340,420)"/>
+    <ellipse cx="430" cy="490" rx="15" ry="6"  transform="rotate(-7,430,490)"/>
+    <ellipse cx="370" cy="550" rx="10" ry="4"  transform="rotate(14,370,550)"/>
+    <ellipse cx="500" cy="460" rx="11" ry="5"/>
+    <ellipse cx="460" cy="600" rx="13" ry="5"  transform="rotate(-12,460,600)"/>
+    <!-- Center zone -->
+    <ellipse cx="580" cy="400" rx="12" ry="5"  transform="rotate(6,580,400)"/>
+    <ellipse cx="640" cy="470" rx="10" ry="4"  transform="rotate(-9,640,470)"/>
+    <ellipse cx="550" cy="540" rx="14" ry="5"  transform="rotate(11,550,540)"/>
+    <ellipse cx="620" cy="600" rx="9"  ry="4"/>
+    <!-- Right zone -->
+    <ellipse cx="1180" cy="400" rx="14" ry="6" transform="rotate(-6,1180,400)"/>
+    <ellipse cx="1260" cy="470" rx="11" ry="5" transform="rotate(9,1260,470)"/>
+    <ellipse cx="1320" cy="530" rx="13" ry="5" transform="rotate(-11,1320,530)"/>
+    <ellipse cx="1140" cy="550" rx="10" ry="4" transform="rotate(8,1140,550)"/>
+    <ellipse cx="1350" cy="600" rx="12" ry="5" transform="rotate(-5,1350,600)"/>
+    <ellipse cx="1220" cy="620" rx="15" ry="6" transform="rotate(13,1220,620)"/>
+    <ellipse cx="1100" cy="640" rx="11" ry="4"/>
+    <ellipse cx="1280" cy="660" rx="9"  ry="4" transform="rotate(-8,1280,660)"/>
+  </g>
+
+  <!-- Larger boulders -->
+  <g fill="#36332F" opacity="0.25">
+    <ellipse cx="130"  cy="450" rx="30" ry="14" transform="rotate(-5,130,450)"/>
+    <ellipse cx="300"  cy="520" rx="25" ry="12" transform="rotate(8,300,520)"/>
+    <ellipse cx="490"  cy="430" rx="22" ry="10" transform="rotate(-3,490,430)"/>
+    <ellipse cx="1300" cy="480" rx="28" ry="13" transform="rotate(6,1300,480)"/>
+    <ellipse cx="1180" cy="580" rx="24" ry="11" transform="rotate(-7,1180,580)"/>
+    <ellipse cx="380"  cy="640" rx="20" ry="9"  transform="rotate(4,380,640)"/>
+  </g>
+
+  <!-- ─── GROUND SURFACE ───────────────────────────────────────── -->
+  <!-- Main surface silhouette (slight undulation) -->
+  <path d="M0,340 Q80,332 180,338 Q300,344 420,335 Q550,330 680,340 Q800,348 920,336 Q960,333 1000,338 Q1100,344 1200,336 Q1300,330 1400,340 L1400,355 Q1250,360 1100,354 Q950,358 800,362 Q650,358 500,355 Q350,360 200,356 L0,358 Z" fill="#5C564E"/>
+  <!-- Surface darkening band -->
+  <path d="M0,345 Q150,338 300,346 Q500,352 700,342 Q900,336 1100,346 Q1250,352 1400,344 L1400,360 L0,360 Z" fill="#4E4A44"/>
+
+  <!-- Sparse ground tufts / scrub -->
+  <g stroke="#5C564E" stroke-width="1.5" opacity="0.3" fill="none">
+    <path d="M50,340  L48,332  M55,340 L56,330 M60,340  L58,333"/>
+    <path d="M250,337 L248,328 M256,337 L257,326"/>
+    <path d="M450,335 L448,326 M455,335 L457,324"/>
+    <path d="M700,340 L698,332"/>
+    <path d="M1150,338 L1148,329 M1156,338 L1158,327"/>
+    <path d="M1350,335 L1348,327"/>
+  </g>
+
+  <!-- Faint thermal wisps rising from surface -->
+  <g fill="none" stroke="white" stroke-width="1" opacity="0.1">
+    <path d="M1150,335 Q1145,322 1150,310 Q1155,298 1150,286"/>
+    <path d="M1250,338 Q1248,328 1252,318 Q1248,308 1252,298"/>
+    <path d="M780,340  Q778,332 782,324"/>
+    <path d="M500,336  Q498,328 502,320"/>
+  </g>
+
+  <!-- ─── GEYSER SYSTEM ─────────────────────────────────────────── -->
+  <!--
+    All elements inside this group shift together when GEYSER_X changes.
+    The default center axis is x=934. JS will apply translate(GEYSER_X - 934, 0).
+    Do NOT add unrelated decorations inside this group.
+  -->
+  <g id="geyser-system">
+
+    <!-- LOWER WATER POOL (deep reservoir, ~200×180 px, centered ~x=937 y=620) -->
+    <path d="M700,530 Q730,516 790,520 Q860,512 940,524 Q1010,518 1080,528 Q1140,522 1190,538 Q1230,552 1240,575 Q1248,605 1238,635 Q1230,660 1205,680 Q1175,698 1130,708 Q1080,716 1010,712 Q940,706 870,712 Q800,718 740,706 Q690,695 665,675 Q642,655 635,628 Q628,595 638,565 Q650,542 700,530 Z"
+          fill="url(#lowerPoolGrad)" opacity="0.92"/>
+    <!-- Inner ripple layer -->
+    <path d="M720,545 Q760,535 820,538 Q890,530 960,540 Q1030,534 1090,545 Q1140,555 1155,572 Q1168,595 1160,620 Q1152,645 1130,660 Q1100,675 1060,680 Q1000,685 940,680 Q880,685 820,678 Q770,670 745,655 Q725,640 720,618 Q714,592 720,568 Q724,555 720,545 Z"
+          fill="url(#lowerPoolGrad)" opacity="0.3" filter="url(#waterRipple)"/>
+    <!-- Pool outline -->
+    <path d="M700,530 Q730,516 790,520 Q860,512 940,524 Q1010,518 1080,528 Q1140,522 1190,538 Q1230,552 1240,575 Q1248,605 1238,635 Q1230,660 1205,680 Q1175,698 1130,708 Q1080,716 1010,712 Q940,706 870,712 Q800,718 740,706 Q690,695 665,675 Q642,655 635,628 Q628,595 638,565 Q650,542 700,530 Z"
+          fill="none" stroke="#4AB8C6" stroke-width="2.5" opacity="0.2"/>
+    <!-- Magma heat glow beneath pool bottom -->
+    <ellipse cx="940" cy="705" rx="200" ry="20" fill="#C94A22" opacity="0.25" filter="url(#softBlur)"/>
+    <!-- Rising bubbles -->
+    <g fill="#4AB8C6" opacity="0.3">
+      <circle cx="890" cy="650" r="5"/>
+      <circle cx="910" cy="620" r="3.5"/>
+      <circle cx="875" cy="590" r="2.8"/>
+      <circle cx="930" cy="570" r="2.2"/>
+      <circle cx="960" cy="660" r="4"/>
+      <circle cx="1020" cy="630" r="3"/>
+      <circle cx="850"  cy="680" r="3.5"/>
+    </g>
+
+    <!-- ── AQUIFER MAGNIFICATION OVERLAY ────────────────────────── -->
+    <!--
+      A small dotted circle inside the pool marks a "zoom origin."
+      Two dotted external-tangent lines connect it to a larger circle
+      containing the Porous_Rocks.png image (pore spaces between rocks).
+      The large circle sits inside the lower pool.
+
+      Geometry (external tangent computation):
+        Small circle: center (890, 555), r = 12
+        Large circle: center (790, 640), r = 62  (original 82 shrunk 25%)
+        Tangent line 1: (900.7, 560.5) → (845.1, 668.4)
+        Tangent line 2: (886.3, 543.6) → (770.9, 581.0)
+    -->
+
+    <!-- Clip path for magnification circle (inside geyser-system so it transforms with the group) -->
+    <clipPath id="aquiferMagClip">
+      <circle cx="790" cy="640" r="62"/>
+    </clipPath>
+
+    <!-- Large magnification circle with Porous_Rocks.png inside -->
+    <!-- Dark background behind the image to ensure contrast -->
+    <circle cx="790" cy="640" r="64"
+            fill="#0e1a1e" opacity="0.95"/>
+    <!-- The porous rocks image, clipped to circle -->
+    <image href="Porous_Rocks.png"
+           x="728" y="578" width="124" height="124"
+           preserveAspectRatio="xMidYMid slice"
+           clip-path="url(#aquiferMagClip)"
+           opacity="1"/>
+    <!-- Circle border for the magnification view -->
+    <circle cx="790" cy="640" r="63"
+            fill="none" stroke="white" stroke-width="2.5" opacity="0.9"/>
+
+    <!-- Small dotted circle (the "zoom origin" point in the pool) -->
+    <circle cx="890" cy="555" r="12"
+            fill="none" stroke="white" stroke-width="1.8"
+            stroke-dasharray="4,3" opacity="0.85"/>
+
+    <!-- External tangent lines (each tangent to BOTH circles) -->
+    <!-- Tangent line 1: upper-left side -->
+    <line x1="886.3" y1="543.6" x2="770.9" y2="581.0"
+          stroke="white" stroke-width="1.5"
+          stroke-dasharray="5,4" opacity="0.7"/>
+    <!-- Tangent line 2: lower-right side -->
+    <line x1="900.7" y1="560.5" x2="845.1" y2="668.4"
+          stroke="white" stroke-width="1.5"
+          stroke-dasharray="5,4" opacity="0.7"/>
+
+    <!-- ── END AQUIFER MAGNIFICATION OVERLAY ─────────────────────── -->
+
+    <!-- CONNECTOR CHANNEL (lower pool → upper pool, curved ascending pipe) -->
+    <!-- Wide colored stroke = channel body; narrow stroke = highlight -->
+    <path d="M920,530 Q928,505 932,480 Q935,458 928,438 Q924,420 920,405"
+          fill="none" stroke="url(#connectorFill)" stroke-width="22" stroke-linecap="round" opacity="0.85"/>
+    <path d="M920,530 Q928,505 932,480 Q935,458 928,438 Q924,420 920,405"
+          fill="none" stroke="#3AA8B8" stroke-width="10" stroke-linecap="round" opacity="0.25"/>
+
+    <!-- UPPER WATER POOL (shallow reservoir near surface, centered ~x=943 y=415) -->
+    <path d="M845,375 Q875,360 915,365 Q955,358 990,368 Q1025,375 1042,392 Q1055,410 1050,430 Q1045,448 1025,458 Q1000,468 970,470 Q940,472 910,468 Q880,465 858,454 Q840,442 835,425 Q830,405 845,375 Z"
+          fill="url(#upperPoolGrad)" opacity="0.88"/>
+    <!-- Pool outline -->
+    <path d="M845,375 Q875,360 915,365 Q955,358 990,368 Q1025,375 1042,392 Q1055,410 1050,430 Q1045,448 1025,458 Q1000,468 970,470 Q940,472 910,468 Q880,465 858,454 Q840,442 835,425 Q830,405 845,375 Z"
+          fill="none" stroke="#4AB8C6" stroke-width="2" opacity="0.2"/>
+    <!-- Water surface shimmer lines -->
+    <g stroke="#7DD4E0" stroke-width="0.8" opacity="0.18" fill="none">
+      <path d="M870,400 Q910,396 950,402 Q990,398 1020,404"/>
+      <path d="M860,425 Q905,420 950,428 Q995,423 1030,430"/>
+      <path d="M875,448 Q920,443 960,450"/>
+    </g>
+    <!-- Small bubbles -->
+    <g fill="#B8EAF0" opacity="0.3">
+      <circle cx="920" cy="408" r="3"/>
+      <circle cx="950" cy="395" r="2.2"/>
+      <circle cx="895" cy="430" r="2.5"/>
+      <circle cx="975" cy="425" r="2"/>
+    </g>
+
+    <!-- CONDUIT (upper pool → sinter cone opening, narrow vertical channel) -->
+    <path d="M930,372 Q934,355 930,340"
+          fill="none" stroke="#2A96A8" stroke-width="18" stroke-linecap="round" opacity="0.75"/>
+    <path d="M930,372 Q934,355 930,340"
+          fill="none" stroke="#4AB8C6" stroke-width="8"  stroke-linecap="round" opacity="0.3"/>
+
+    <!-- SINTER CONE (mineral deposit mound around the vent opening) -->
+    <!-- Outer cone body -->
+    <path d="M880,345 Q890,335 905,322 Q920,312 935,310 Q950,312 965,322 Q980,335 990,345 Q970,350 950,352 Q930,354 910,352 Q890,350 880,345 Z"
+          fill="#6A6460"/>
+    <!-- Mid-tone highlight band -->
+    <path d="M895,340 Q905,330 920,324 Q935,322 945,324 Q958,330 968,340 Q955,344 935,346 Q915,346 895,340 Z"
+          fill="#7A7570" opacity="0.6"/>
+    <!-- Rim around vent -->
+    <path d="M910,320 Q920,315 935,314 Q948,315 958,320 Q950,322 935,323 Q920,322 910,320 Z"
+          fill="#5C564E"/>
+    <!-- Vent opening (dark ellipse) -->
+    <ellipse cx="934" cy="317" rx="14" ry="5" fill="#2A3A3E"/>
+    <!-- Mineral encrustation highlights -->
+    <g fill="#C8C4BE" opacity="0.3">
+      <path d="M900,338 Q905,334 912,336 Q908,340 900,338 Z"/>
+      <path d="M955,336 Q960,332 968,335 Q963,339 955,336 Z"/>
+      <path d="M920,316 Q925,312 930,315 Q926,318 920,316 Z"/>
+      <path d="M942,316 Q946,313 950,316 Q947,318 942,316 Z"/>
+    </g>
+
+  </g><!-- end #geyser-system -->
+
+  <!-- ─── MAGMA POOL ────────────────────────────────────────────── -->
+  <!-- Full-width magma body at bottom -->
+  <path d="M0,730 Q80,718 200,726 Q350,716 520,728 Q680,720 850,730 Q1020,718 1180,726 Q1300,720 1400,730 L1400,900 L0,900 Z"
+        fill="url(#magmaGrad)"/>
+  <!-- Bright surface shimmer on magma -->
+  <path d="M0,730 Q80,718 200,726 Q350,716 520,728 Q680,720 850,730 Q1020,718 1180,726 Q1300,720 1400,730 L1400,748 Q1200,742 1000,750 Q800,744 600,752 Q400,746 200,750 L0,746 Z"
+        fill="url(#magmaSurface)"/>
+  <!-- Glowing lava flow lines on surface -->
+  <g stroke="#EDBE6A" stroke-width="1.8" opacity="0.35" fill="none" filter="url(#glow)">
+    <path d="M100,760  Q150,755 200,762 Q270,758 340,765"/>
+    <path d="M500,750  Q560,746 620,754 Q680,748 740,756"/>
+    <path d="M850,755  Q920,750 990,758 Q1060,752 1130,760"/>
+    <path d="M1200,752 Q1260,748 1320,756"/>
+  </g>
+  <!-- Dark convection blobs just below surface -->
+  <g fill="#7A2210" opacity="0.3">
+    <path d="M150,755  Q200,750 250,756 Q260,770 220,775 Q170,772 150,755 Z"/>
+    <path d="M600,748  Q660,744 720,750 Q730,765 680,770 Q620,766 600,748 Z"/>
+    <path d="M1050,752 Q1110,748 1170,754 Q1175,768 1130,772 Q1070,768 1050,752 Z"/>
+  </g>
+  <!-- Soft ambient glow patches deeper in magma -->
+  <g filter="url(#softBlur)">
+    <ellipse cx="300"  cy="800" rx="80"  ry="30" fill="#D4652E" opacity="0.3"/>
+    <ellipse cx="700"  cy="820" rx="100" ry="35" fill="#C94A22" opacity="0.25"/>
+    <ellipse cx="1100" cy="810" rx="90"  ry="30" fill="#D4652E" opacity="0.28"/>
+    <ellipse cx="500"  cy="840" rx="60"  ry="25" fill="#E8944A" opacity="0.15"/>
+    <ellipse cx="900"  cy="850" rx="70"  ry="25" fill="#E8944A" opacity="0.12"/>
+  </g>
+  <!-- Hot spots (bright points deep in pool) -->
+  <g>
+    <circle cx="280"  cy="745" r="8" fill="#EDBE6A" opacity="0.35"/>
+    <circle cx="280"  cy="745" r="5" fill="#F0D080" opacity="0.2"/>
+    <circle cx="550"  cy="740" r="6" fill="#EDBE6A" opacity="0.3"/>
+    <circle cx="820"  cy="742" r="9" fill="#EDBE6A" opacity="0.32"/>
+    <circle cx="820"  cy="742" r="6" fill="#F0D080" opacity="0.18"/>
+    <circle cx="1080" cy="738" r="7" fill="#EDBE6A" opacity="0.28"/>
+    <circle cx="1300" cy="744" r="5" fill="#EDBE6A" opacity="0.25"/>
+  </g>
+  <!-- Faint heat band along magma top edge -->
+  <rect x="300" y="695" width="900" height="40" fill="#C94A22" opacity="0.06" filter="url(#softBlur)"/>
+
+</svg>
+
+
+<!-- ============================================================ -->
+<!-- LAYER 2: BORDER FRAME + TITLE NOTCH                          -->
+<!-- ============================================================ -->
+<svg class="layer-border" viewBox="0 0 1400 900" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <mask id="borderMask">
+      <!-- White = visible, black = punched out -->
+      <rect x="0" y="0" width="1400" height="900" fill="white"/>
+      <!-- Inner rectangle cut: sized by JS from BORDER_THICKNESS -->
+      <rect id="borderInner" x="16" y="16" width="1368" height="868" rx="6" fill="black"/>
+      <!-- Re-add notch shape over the cut-out edge -->
+      <path id="borderNotchMaskPath"
+            d="M450,0 L450,44 Q450,72 478,72 L922,72 Q950,72 950,44 L950,0 Z"
+            fill="white"/>
+    </mask>
+
+    <!-- Clip path for anything drawn inside the notch -->
+    <clipPath id="notchClip">
+      <path id="notchClipPath"
+            d="M450,0 L450,44 Q450,72 478,72 L922,72 Q950,72 950,44 L950,0 Z"/>
+    </clipPath>
+  </defs>
+
+  <!-- Border frame (white ring, punched by mask above) -->
+  <rect x="0" y="0" width="1400" height="900" fill="white" mask="url(#borderMask)"/>
+
+  <!-- Notch tab (white pill shape at top center) — title goes here -->
+  <path id="notchPath"
+        d="M450,0 L450,44 Q450,72 478,72 L922,72 Q950,72 950,44 L950,0 Z"
+        fill="white"/>
+  <!-- Notch interior is intentionally empty — add title text above this comment -->
+
+</svg>
+
+
+<!-- ============================================================ -->
+<!-- LAYER 3: PHOTO INSERTS (left side)                           -->
+<!-- ============================================================ -->
+<svg class="layer-images" viewBox="0 0 1400 900" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <clipPath id="bottomImageClip">
+      <rect x="16" y="460" width="350" height="350" rx="20" ry="20"/>
+    </clipPath>
+    <clipPath id="topImageClip">
+      <rect x="200" y="100" width="300" height="400" rx="20" ry="20"/>
+    </clipPath>
+  </defs>
+  <!--
+    BOTTOM IMAGE  — portrait (2000×2500 → 250×250 in SVG units)
+    Bottom-left corner of the midground zone, sits above magma.
+  -->
+  <image
+    href="bottom_image.jpg"
+    x="16" y="460"
+    width="350" height="350"
+    preserveAspectRatio="xMidYMid slice"
+    opacity="1"
+    clip-path="url(#bottomImageClip)"
+  />
+
+  <!--
+    TOP IMAGE — landscape (6000×4000 → 300×200 in SVG units)
+    Overlaps the bottom image: shifted right 100px, up ~190px.
+  -->
+  <image
+    href="top_image.jpg"
+    x="200" y="100"
+    width="300" height="400"
+    preserveAspectRatio="xMidYMid slice"
+    opacity="1"
+    clip-path="url(#topImageClip)"
+  />
+</svg>
+
+
+<!-- ============================================================ -->
+<!-- LAYER 4: GEYSER ERUPTION PLUME (renders above border notch)  -->
+<!-- ============================================================ -->
+<svg class="layer-geyser" viewBox="0 0 1400 900" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Duplicate of geyserWaterGrad (can't cross SVG boundaries) -->
+    <linearGradient id="geyserWaterGrad2" x1="0.5" y1="1" x2="0.5" y2="0">
+      <stop offset="0%"   stop-color="#2A96A8"/>
+      <stop offset="40%"  stop-color="#4AB8C6" stop-opacity="0.85"/>
+      <stop offset="70%"  stop-color="#7DD4E0" stop-opacity="0.6"/>
+      <stop offset="100%" stop-color="#B8EAF0" stop-opacity="0.3"/>
+    </linearGradient>
+    <filter id="softBlur2">
+      <feGaussianBlur stdDeviation="3"/>
+    </filter>
+  </defs>
+
+  <!--
+    All plume elements are inside this group.
+    JS applies the same X offset as #geyser-system so they stay aligned.
+    Default axis: x=934.
+  -->
+  <g id="geyser-plume">
+
+    <!-- Main plume column -->
+    <path d="M918,317 Q914,280 910,245 Q906,210 912,170 Q916,130 922,90 Q926,55 930,25
+             L940,25 Q944,55 948,90 Q952,130 956,170 Q962,210 958,245 Q954,280 950,317 Z"
+          fill="url(#geyserWaterGrad2)" opacity="0.8"/>
+
+    <!-- Upper plume fan -->
+    <path d="M890,130 Q898,90 908,55 Q918,25 934,8 Q950,25 960,55 Q970,90 978,130
+             Q960,115 934,108 Q908,115 890,130 Z"
+          fill="#4AB8C6" opacity="0.35"/>
+
+    <!-- Mist cloud at apex -->
+    <g opacity="1" filter="url(#softBlur2)">
+      <ellipse cx="934" cy="40" rx="70" ry="35" fill="#B8EAF0"/>
+      <ellipse cx="934" cy="80" rx="50" ry="28" fill="#7DD4E0"/>
+    </g>
+
+    <!-- Water droplets spraying outward -->
+    <g fill="#4AB8C6" opacity="0.5">
+      <circle cx="885" cy="75"  r="4"/>  <circle cx="980" cy="65"  r="3.5"/>
+      <circle cx="870" cy="120" r="3"/>  <circle cx="995" cy="108" r="3.5"/>
+      <circle cx="860" cy="160" r="2.5"/><circle cx="1005" cy="150" r="2.8"/>
+      <circle cx="875" cy="50"  r="2.2"/><circle cx="988" cy="42"  r="2.5"/>
+      <circle cx="905" cy="28"  r="2"/>  <circle cx="960" cy="22"  r="2.2"/>
+      <circle cx="850" cy="95"  r="2"/>  <circle cx="1010" cy="88" r="2"/>
+    </g>
+    <!-- Fine mist droplets -->
+    <g fill="#7DD4E0" opacity="1">
+      <circle cx="845"  cy="140" r="1.5"/><circle cx="1020" cy="130" r="1.8"/>
+      <circle cx="860"  cy="45"  r="1.5"/><circle cx="1000" cy="38"  r="1.3"/>
+      <circle cx="895"  cy="15"  r="1.5"/><circle cx="970"  cy="12"  r="1.2"/>
+    </g>
+
+    <!-- White foam highlights in column -->
+    <g fill="white" opacity="0.1">
+      <ellipse cx="895" cy="95" rx="35" ry="18"/>
+      <ellipse cx="975" cy="80" rx="30" ry="15"/>
+      <ellipse cx="934" cy="35" rx="45" ry="22"/>
+      <ellipse cx="880" cy="50" rx="25" ry="13"/>
+      <ellipse cx="980" cy="45" rx="22" ry="12"/>
+    </g>
+
+    <!-- Plume base flare (where column meets cone) -->
+    <g fill="#4AB8C6" opacity="1">
+      <ellipse cx="934" cy="318" rx="20" ry="5"/>
+      <path d="M915,318 Q920,312 928,315 Q935,310 942,315 Q948,312 953,318 Q945,320 934,321 Q923,320 915,318 Z"
+            opacity="0.5"/>
+    </g>
+
+  </g><!-- end #geyser-plume -->
+</svg>
+
+
+<!-- ============================================================ -->
+<!-- LAYER 5: TEXT CONTENT                                         -->
+<!--                                                               -->
+<!-- HOW TO MOVE THINGS                                            -->
+<!-- Every piece of text is its own <g id="..."> with a single    -->
+<!-- transform="translate(x, y)" attribute. Change x/y there and  -->
+<!-- the whole mini-section moves as a unit. Internal coordinates  -->
+<!-- always start at (0, 0) so the translate IS the position.     -->
+<!-- ============================================================ -->
+<svg class="layer-text" viewBox="0 0 1400 900" xmlns="http://www.w3.org/2000/svg">
+
+
+  <!-- ─────────────────────────────────────────────────────────── -->
+  <!-- TITLE NOTCH                                                  -->
+  <!-- ─────────────────────────────────────────────────────────── -->
+
+  <!-- Title: main headline -->
+  <g id="title-headline" transform="translate(700, 38)">
+    <text text-anchor="middle"
+          font-family="'Libre Baskerville', Georgia, serif"
+          font-weight="700" font-size="40" fill="#2C2C2A" letter-spacing="0.3"
+    >To Spew or Not to Spew</text>
+  </g>
+
+  <!-- Title: italic subtitle -->
+  <g id="title-subtitle" transform="translate(700, 65)">
+    <text text-anchor="middle"
+          font-family="'Libre Baskerville', Georgia, serif"
+          font-weight="400" font-style="italic" font-size="14"
+          fill="#6A6460" letter-spacing="0.8"
+    >What Lies Beneath Yellowstone's Geysers</text>
+  </g>
+
+
+  <!-- ─────────────────────────────────────────────────────────── -->
+  <!-- GEYSER FUN FACT — left column, spans sky/underground zones -->
+  <!-- Semi-transparent dark panel behind for readability          -->
+  <!-- ─────────────────────────────────────────────────────────── -->
+
+  <!-- Dark background panel behind fun fact text -->
+  <rect x="20" y="20" width="172" height="310" rx="6" ry="6"
+        fill="#2E2B28" opacity="0.75"/>
+
+  <!-- Fun fact: section label + rule -->
+  <g id="funfact-label" transform="translate(30, 44)">
+    <text font-family="'Source Sans 3', sans-serif"
+          font-weight="600" font-size="11.5" fill="#C8BFA8"
+          letter-spacing="2" opacity="0.95"
+    >GEYSER FUN FACT</text>
+    <line x1="0" y1="8" x2="132" y2="8"
+          stroke="#C8BFA8" stroke-width="1" opacity="0.35"/>
+  </g>
+
+  <!-- Fun fact: compact bullet layout sized for full 172×310 panel -->
+  <g id="funfact-body" transform="translate(26, 74)">
+    <text font-family="'Source Sans 3', sans-serif"
+          font-weight="400" font-size="11" fill="#C8BFA8">
+      <tspan x="0" dy="0">• Geysers are rare worldwide.</tspan>
+      <tspan x="12" dy="14">Only about 1,000 exist on</tspan>
+      <tspan x="12" dy="14">Earth today.</tspan>
+
+      <tspan x="0" dy="20">• Yellowstone hosts nearly</tspan>
+      <tspan x="12" dy="14">half of all known geysers on</tspan>
+      <tspan x="12" dy="14">the planet.</tspan>
+
+      <tspan x="0" dy="20">• Old Faithful’s reservoir is</tspan>
+      <tspan x="12" dy="14">more than 650 feet across</tspan>
+      <tspan x="12" dy="14">below ground.</tspan>
+
+      <tspan x="0" dy="20">• It stores over 79 million</tspan>
+      <tspan x="12" dy="14">gallons of water — roughly</tspan>
+      <tspan x="12" dy="14">120 Olympic-size pools.</tspan>
+
+      <tspan x="0" dy="20">• Heat comes from a magma</tspan>
+      <tspan x="12" dy="14">plume rising from over</tspan>
+      <tspan x="12" dy="14">1,800 miles deep.</tspan>
+    </text>
+  </g>
+
+
+  <!-- ─────────────────────────────────────────────────────────── -->
+  <!-- SKY ZONE — "THE ERUPTION"                                   -->
+  <!-- Dark navy text on light-blue sky                            -->
+  <!-- ─────────────────────────────────────────────────────────── -->
+
+  <!-- Eruption: section label + rule -->
+  <g id="eruption-label" transform="translate(530, 100)">
+    <text font-family="'Source Sans 3', sans-serif"
+          font-weight="600" font-size="13" fill="#1A3A5C"
+          letter-spacing="3" opacity="0.9"
+    >THE ERUPTION</text>
+    <line x1="0" y1="6" x2="120" y2="6"
+          stroke="#1A3A5C" stroke-width="1.2" opacity="0.4"/>
+  </g>
+
+  <!-- Eruption: big stat number -->
+  <g id="eruption-stat-number" transform="translate(535, 142)">
+    <text font-family="'Libre Baskerville', Georgia, serif"
+          font-weight="700" font-size="36" fill="#0D2B45"
+    >8,000+</text>
+  </g>
+
+  <!-- Eruption: stat caption -->
+  <g id="eruption-stat-caption" transform="translate(535, 164)">
+    <text font-family="'Source Sans 3', sans-serif"
+          font-weight="400" font-size="14" fill="#1A3A5C" letter-spacing="0.3"
+    >gallons per eruption, reaching over</text>
+  </g>
+
+  <!-- Eruption: big stat — "100 feet" -->
+  <g id="eruption-stat-feet" transform="translate(535, 205)">
+    <text font-family="'Libre Baskerville', Georgia, serif"
+          font-weight="700" font-size="40" fill="#0D2B45"
+    >100 feet</text>
+  </g>
+
+  <!-- Eruption: body paragraph (expanded to the right) -->
+  <g id="eruption-body" transform="translate(535, 232)">
+    <text font-family="'Source Sans 3', sans-serif"
+          font-weight="300" font-size="14" fill="#163252">
+      <tspan x="0" dy="0">Once the water reaches the surface, the tremendous decrease in its pressure causes</tspan>
+      <tspan x="0" dy="18">eruptions. These events can spew out more than 8000 gallons of water at a time,</tspan>
+      <tspan x="0" dy="18">shooting the water up to heights of over 100 feet! Besides being a marvel to look</tspan>
+      <tspan x="0" dy="18">at, these timely eruptions are a testament to the immense amount of energy that is</tspan>
+      <tspan x="0" dy="18">beneath the Earth's surface which gets transferred into the water in the form of</tspan>
+      <tspan x="0" dy="18">thermal energy.</tspan>
+    </text>
+  </g>
+
+
+  <!-- ─────────────────────────────────────────────────────────── -->
+  <!-- MIDGROUND — "THE PLUMBING"                                  -->
+  <!-- Warm cream text on dark underground rock                    -->
+  <!-- ─────────────────────────────────────────────────────────── -->
+
+  <!-- Plumbing: section label + rule -->
+  <g id="plumbing-label" transform="translate(520, 360)">
+    <text font-family="'Source Sans 3', sans-serif"
+          font-weight="600" font-size="13" fill="#C8BFA8"
+          letter-spacing="3" opacity="0.9"
+    >THE PLUMBING</text>
+    <line x1="0" y1="6" x2="130" y2="6"
+          stroke="#C8BFA8" stroke-width="1.2" opacity="0.35"/>
+  </g>
+
+  <!-- Plumbing: big stat word -->
+  <g id="plumbing-stat-number" transform="translate(525, 400)">
+    <text font-family="'Libre Baskerville', Georgia, serif"
+          font-weight="700" font-size="30" fill="#E8DCC8"
+    >Millions</text>
+  </g>
+
+  <!-- Plumbing: stat caption -->
+  <g id="plumbing-stat-caption" transform="translate(525, 420)">
+    <text font-family="'Source Sans 3', sans-serif"
+          font-weight="400" font-size="14" fill="#B8AD96" letter-spacing="0.3"
+    >of gallons, held underground</text>
+  </g>
+
+  <!-- Plumbing: body paragraph (font 14, using vertical space to magma line) -->
+  <g id="plumbing-body" transform="translate(525, 448)">
+    <text font-family="'Source Sans 3', sans-serif"
+          font-weight="300" font-size="14" fill="#C8BFA8">
+      <tspan x="0" dy="0">Underneath these awe-inspiring fountains of steam lie reservoirs of water </tspan>
+      <tspan x="0" dy="18">that can hold millions of gallons of water. They are heated by the thermal energy</tspan>
+      <tspan x="0" dy="18">of the Earth to cause the geyser eruptions that we see on the surface of the planet.</tspan>
+      <tspan x="0" dy="50">This water is held in complex underground </tspan>
+      <tspan x="0" dy="18">structures that prevents heated water from</tspan>
+      <tspan x="0" dy="18">mixing with the cooler water at the</tspan>
+      <tspan x="0" dy="18">surface like in a hot spring.</tspan>
+      <tspan x="0" dy="50">Instead, the pressurized water is held</tspan>
+      <tspan x="0" dy="18">back by the underground pipes of the</tspan>
+      <tspan x="0" dy="18">geyser, until the pressure is so great that it</tspan>
+      <tspan x="0" dy="18">shoots out as a stream of steam.</tspan>
+    </text>
+  </g>
+
+
+  <!-- ─────────────────────────────────────────────────────────── -->
+  <!-- AQUIFER INFO — text box above pool, to the right            -->
+  <!-- ─────────────────────────────────────────────────────────── -->
+
+  <!-- Aquifer: section label + rule — positioned to the right of the upper pool -->
+  <g id="aquifer-label" transform="translate(1050, 540)">
+    <text font-family="'Source Sans 3', sans-serif"
+          font-weight="600" font-size="16" fill="#00000"
+          letter-spacing="3" opacity="0.9"
+    >THE AQUIFER</text>
+    <line x1="0" y1="6" x2="125" y2="6"
+          stroke="black" stroke-width="1.2" opacity="1"/>
+  </g>
+
+  <!-- Aquifer: body paragraph (~85 words) -->
+  <g id="aquifer-body" transform="translate(1022, 560)">
+    <text font-family="'Source Sans 3', sans-serif"
+          font-weight="400" font-size="12" fill="#00000">
+      <tspan x="0" dy="0">Yellowstone's geysers are fed by vast underground aquifers</tspan>
+      <tspan x="0" dy="16">— layers of porous rock saturated with water. Rather than open </tspan>
+      <tspan x="0" dy="16">underground lakes, these reservoirs consist of tiny pore spaces </tspan>
+      <tspan x="0" dy="16">between rock grains, much like water held in a sponge. Rain and</tspan>
+      <tspan x="0" dy="16">snowmelt seep downward through cracks over thousands of years,</tspan>
+      <tspan x="0" dy="16">filling these pores. When the stored water contacts</tspan>
+      <tspan x="0" dy="16">magma-heated rock, it superheats and drives eruptions.</tspan>
+    </text>
+  </g>
+
+
+  <!-- ─────────────────────────────────────────────────────────── -->
+  <!-- MAGMA ZONE — "THE HEAT SOURCE"                              -->
+  <!-- Pale cream/yellow text on hot orange magma                  -->
+  <!-- ─────────────────────────────────────────────────────────── -->
+
+  <!-- Heat source: section label + rule -->
+  <g id="heat-label" transform="translate(420, 740)">
+    <text font-family="'Source Sans 3', sans-serif"
+          font-weight="600" font-size="13" fill="#FFF5E0"
+          letter-spacing="3" opacity="0.9"
+    >THE HEAT SOURCE</text>
+    <line x1="0" y1="6" x2="140" y2="6"
+          stroke="#FFF5E0" stroke-width="1.2" opacity="0.35"/>
+  </g>
+
+  <!-- Heat source: big stat -->
+  <g id="heat-stat-number" transform="translate(425, 775)">
+    <text font-family="'Libre Baskerville', Georgia, serif"
+          font-weight="700" font-size="32" fill="#FFF8EA"
+    >3&#x2013;4 miles</text>
+  </g>
+
+  <!-- Heat source: stat caption -->
+  <g id="heat-stat-caption" transform="translate(425, 795)">
+    <text font-family="'Source Sans 3', sans-serif"
+          font-weight="400" font-size="13.5" fill="#FAECD0" letter-spacing="0.3"
+    >beneath your feet at Old Faithful</text>
+  </g>
+
+  <!-- Heat source: body paragraph split into two movable blocks -->
+  <g id="heat-body-top" transform="translate(425, 816)">
+    <text font-family="'Source Sans 3', sans-serif"
+          font-weight="400" font-size="12" fill="#FAECD0">
+      <tspan x="0" dy="0">Magma, three miles beneath Yellowstone park, pressure heats underground water</tspan>
+      <tspan x="0" dy="15">and causes regular geyser eruptions such as Old Faithful. The underground water is under pressure, so it can</tspan>
+      <tspan x="0" dy="15">boil at a much higher temperature than normal. The temperature of the water can reach up to 200</tspan>
+      <tspan x="0" dy="15">degrees Celsius, twice the boiling point of water at standard conditions!</tspan>
+
+    </text>
+  </g>
+
+  <g id="heat-body-bottom" transform="translate(1000, 800)">
+    <text font-family="'Source Sans 3', sans-serif"
+          font-weight="400" font-size="12" fill="#FAECD0">
+      <tspan x="0" dy="0">Additionally, Yellowstone doesn't actually have one large underground</tspan>
+      <tspan x="0" dy="15">pool of red magma. In fact 80% to 95% of the magma has crystallized into </tspan>
+      <tspan x="0" dy="15">a solid. A more realistic picture of what lies beneath Yellowstone is a</tspan>
+      <tspan x="0" dy="15">sponge-like web of that &#x201C;crystal mush&#x201D;, a blend of crystal structures</tspan>
+      <tspan x="0" dy="15"> with molten rock filling the pores.</tspan>
+
+    </text>
+  </g>
+
+
+</svg>
+
+
+<script>
+// ================================================================
+// CONFIGURATION — edit these values to change the poster layout
+// ================================================================
+const CONFIG = {
+
+  // ── Border frame ──────────────────────────────────────────────
+  BORDER_THICKNESS: 16,   // px — width of the white border ring
+
+  // ── Title notch (centered tab at top of frame) ────────────────
+  NOTCH_WIDTH:  700,   // px — total width of the tab
+  NOTCH_HEIGHT:  80,   // px — how far down it extends from the top edge
+  NOTCH_RADIUS:  28,   // px — radius of the bottom corners
+
+  // ── Geyser system X axis ──────────────────────────────────────
+  // Change GEYSER_X to move the entire geyser (pools + plume) left or right.
+  // Default center is 934. Positive values shift right, negative shift left.
+  GEYSER_X: 1050,
+
+  // ── Image placements ──────────────────────────────────────────
+  // Edit these to move and resize the images + clipping regions
+  BOTTOM_IMAGE: { x: 30,  y: 460, width: 350, height: 350 },
+  TOP_IMAGE:    { x: 200, y: 100, width: 300, height: 400 },
+
+};
+// ================================================================
+
+
+window.addEventListener('DOMContentLoaded', () => {
+  const { BORDER_THICKNESS: T, NOTCH_WIDTH: NW, NOTCH_HEIGHT: NH,
+          NOTCH_RADIUS: NR, GEYSER_X, BOTTOM_IMAGE, TOP_IMAGE } = CONFIG;
+  const W = 1400, H = 900;
+  const GEYSER_DEFAULT_X = 934; // original design axis — don't change this
+
+  // ── Build notch path (centered at top of canvas) ──────────────
+  const NX = (W - NW) / 2;  // left edge of notch
+  const notchD =
+    `M${NX},0 ` +
+    `L${NX},${NH - NR} ` +
+    `Q${NX},${NH} ${NX + NR},${NH} ` +
+    `L${NX + NW - NR},${NH} ` +
+    `Q${NX + NW},${NH} ${NX + NW},${NH - NR} ` +
+    `L${NX + NW},0 Z`;
+
+  // ── Apply border thickness ─────────────────────────────────────
+  const inner = document.getElementById('borderInner');
+  inner.setAttribute('x',      T);
+  inner.setAttribute('y',      T);
+  inner.setAttribute('width',  W - 2 * T);
+  inner.setAttribute('height', H - 2 * T);
+  inner.setAttribute('rx',     Math.round(T * 0.375));
+
+  // ── Apply notch geometry ───────────────────────────────────────
+  document.getElementById('borderNotchMaskPath').setAttribute('d', notchD);
+  document.getElementById('notchClipPath').setAttribute('d', notchD);
+  document.getElementById('notchPath').setAttribute('d', notchD);
+
+  // ── Apply geyser X offset ──────────────────────────────────────
+  const dx = GEYSER_X - GEYSER_DEFAULT_X;
+  if (dx !== 0) {
+    const translate = `translate(${dx}, 0)`;
+    document.getElementById('geyser-system').setAttribute('transform', translate);
+    document.getElementById('geyser-plume').setAttribute('transform',  translate);
+  }
+
+  // ── Apply image dimensions & clipping ──────────────────────────
+  // Bottom image
+  const bottomImg = document.querySelectorAll('.layer-images image')[0];
+  const bottomClip = document.getElementById('bottomImageClip').querySelector('rect');
+  [bottomImg, bottomClip].forEach(el => {
+    el.setAttribute('x', BOTTOM_IMAGE.x);
+    el.setAttribute('y', BOTTOM_IMAGE.y);
+    el.setAttribute('width', BOTTOM_IMAGE.width);
+    el.setAttribute('height', BOTTOM_IMAGE.height);
+  });
+
+  // Top image
+  const topImg = document.querySelectorAll('.layer-images image')[1];
+  const topClip = document.getElementById('topImageClip').querySelector('rect');
+  [topImg, topClip].forEach(el => {
+    el.setAttribute('x', TOP_IMAGE.x);
+    el.setAttribute('y', TOP_IMAGE.y);
+    el.setAttribute('width', TOP_IMAGE.width);
+    el.setAttribute('height', TOP_IMAGE.height);
+  });
+});
+</script>
+
+</div><!-- .poster-wrap -->
+</body>
+</html>
