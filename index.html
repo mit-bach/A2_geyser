@@ -382,46 +382,21 @@
 
   </g><!-- end #geyser-system -->
 
-  <!-- ─── MAGMA POOL ────────────────────────────────────────────── -->
-  <!-- Full-width magma body at bottom -->
-  <path d="M0,730 Q80,718 200,726 Q350,716 520,728 Q680,720 850,730 Q1020,718 1180,726 Q1300,720 1400,730 L1400,900 L0,900 Z"
-        fill="url(#magmaGrad)"/>
-  <!-- Bright surface shimmer on magma -->
-  <path d="M0,730 Q80,718 200,726 Q350,716 520,728 Q680,720 850,730 Q1020,718 1180,726 Q1300,720 1400,730 L1400,748 Q1200,742 1000,750 Q800,744 600,752 Q400,746 200,750 L0,746 Z"
-        fill="url(#magmaSurface)"/>
-  <!-- Glowing lava flow lines on surface -->
-  <g stroke="#EDBE6A" stroke-width="1.8" opacity="0.35" fill="none" filter="url(#glow)">
-    <path d="M100,760  Q150,755 200,762 Q270,758 340,765"/>
-    <path d="M500,750  Q560,746 620,754 Q680,748 740,756"/>
-    <path d="M850,755  Q920,750 990,758 Q1060,752 1130,760"/>
-    <path d="M1200,752 Q1260,748 1320,756"/>
-  </g>
-  <!-- Dark convection blobs just below surface -->
-  <g fill="#7A2210" opacity="0.3">
-    <path d="M150,755  Q200,750 250,756 Q260,770 220,775 Q170,772 150,755 Z"/>
-    <path d="M600,748  Q660,744 720,750 Q730,765 680,770 Q620,766 600,748 Z"/>
-    <path d="M1050,752 Q1110,748 1170,754 Q1175,768 1130,772 Q1070,768 1050,752 Z"/>
-  </g>
-  <!-- Soft ambient glow patches deeper in magma -->
-  <g filter="url(#softBlur)">
-    <ellipse cx="300"  cy="800" rx="80"  ry="30" fill="#D4652E" opacity="0.3"/>
-    <ellipse cx="700"  cy="820" rx="100" ry="35" fill="#C94A22" opacity="0.25"/>
-    <ellipse cx="1100" cy="810" rx="90"  ry="30" fill="#D4652E" opacity="0.28"/>
-    <ellipse cx="500"  cy="840" rx="60"  ry="25" fill="#E8944A" opacity="0.15"/>
-    <ellipse cx="900"  cy="850" rx="70"  ry="25" fill="#E8944A" opacity="0.12"/>
-  </g>
-  <!-- Hot spots (bright points deep in pool) -->
-  <g>
-    <circle cx="280"  cy="745" r="8" fill="#EDBE6A" opacity="0.35"/>
-    <circle cx="280"  cy="745" r="5" fill="#F0D080" opacity="0.2"/>
-    <circle cx="550"  cy="740" r="6" fill="#EDBE6A" opacity="0.3"/>
-    <circle cx="820"  cy="742" r="9" fill="#EDBE6A" opacity="0.32"/>
-    <circle cx="820"  cy="742" r="6" fill="#F0D080" opacity="0.18"/>
-    <circle cx="1080" cy="738" r="7" fill="#EDBE6A" opacity="0.28"/>
-    <circle cx="1300" cy="744" r="5" fill="#EDBE6A" opacity="0.25"/>
-  </g>
-  <!-- Faint heat band along magma top edge -->
-  <rect x="300" y="695" width="900" height="40" fill="#C94A22" opacity="0.06" filter="url(#softBlur)"/>
+  <!-- ─── MAGMA POOL (Lava image, clipped to curvy upper boundary) ── -->
+  <defs>
+    <clipPath id="magmaClip">
+      <path d="M0,730 Q80,718 200,726 Q350,716 520,728 Q680,720 850,730 Q1020,718 1180,726 Q1300,720 1400,730 L1400,900 L0,900 Z"/>
+    </clipPath>
+  </defs>
+  <!-- Lava photograph clipped to magma zone -->
+  <image href="Lava_copy.jpg"
+         x="0" y="710" width="1400" height="200"
+         preserveAspectRatio="xMidYMid slice"
+         clip-path="url(#magmaClip)"/>
+  <!-- Subtle darkening at the very bottom so it doesn't end abruptly -->
+  <rect x="0" y="850" width="1400" height="50" fill="#1a1a18" opacity="0.4" clip-path="url(#magmaClip)"/>
+  <!-- Faint heat band along magma top edge (blends rock into lava) -->
+  <rect x="0" y="700" width="1400" height="40" fill="#C94A22" opacity="0.1" filter="url(#softBlur)"/>
 
 </svg>
 
