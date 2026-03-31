@@ -547,6 +547,22 @@
 <!-- ============================================================ -->
 <svg class="layer-text" viewBox="0 0 1400 900" xmlns="http://www.w3.org/2000/svg">
 
+  <defs>
+    <filter id="qrShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="3" stdDeviation="4" flood-color="#000000" flood-opacity="0.25"/>
+    </filter>
+    <filter id="qrLabelShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="2" stdDeviation="2.5" flood-color="#000000" flood-opacity="0.22"/>
+    </filter>
+    <linearGradient id="qrLabelGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#2F332E"/>
+      <stop offset="100%" stop-color="#3D433C"/>
+    </linearGradient>
+    <clipPath id="qrClip">
+      <rect id="qrClipRect" x="36" y="734" width="130" height="130" rx="12" ry="12"/>
+    </clipPath>
+  </defs>
+
 
   <!-- ─────────────────────────────────────────────────────────── -->
   <!-- TITLE NOTCH                                                  -->
@@ -773,6 +789,53 @@
     </text>
   </g>
 
+  <!-- QR code block (placed in open space at bottom-left) -->
+  <g id="qr-block">
+      <rect id="qrLabelBg"
+        x="26" y="770"
+        width="190" height="58"
+        rx="12" ry="12"
+        fill="url(#qrLabelGrad)"
+        stroke="#FAECD0" stroke-width="1"
+        filter="url(#qrLabelShadow)"/>
+      <rect id="qrLabelInner"
+        x="29" y="773"
+        width="184" height="52"
+        rx="10" ry="10"
+        fill="none"
+        stroke="#FAECD0" stroke-width="0.6" opacity="0.28"/>
+      <circle id="qrLabelIcon" cx="49" cy="799" r="10.5" fill="#FAECD0" opacity="0.95"/>
+      <path id="qrLabelIconArrow" d="M45,799 L53,799 M50,796 L53,799 L50,802"
+        fill="none" stroke="#2E2B28" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+      <text id="qrLabelEyebrow"
+        x="66" y="791"
+        text-anchor="start"
+        font-family="'Source Sans 3', sans-serif"
+        font-weight="700" font-size="11"
+        fill="#FAECD0" letter-spacing="1.6" opacity="0.9"
+      >SCAN ME</text>
+      <text id="qrLabelMain"
+        x="66" y="811"
+        text-anchor="start"
+        font-family="'Libre Baskerville', Georgia, serif"
+        font-weight="700" font-size="18"
+        fill="#FFF8EA" letter-spacing="0.1"
+      >for Sources</text>
+    <rect id="qrPanelBg"
+        x="220" y="724"
+          width="150" height="150"
+          rx="16" ry="16"
+          fill="#FFFFFF" opacity="0.94"
+          stroke="#D9D2C2" stroke-width="1.5"
+          filter="url(#qrShadow)"/>
+    <image id="qrCodeImage"
+           href="qr_code.png"
+         x="230" y="734"
+           width="130" height="130"
+           preserveAspectRatio="xMidYMid meet"
+           clip-path="url(#qrClip)"/>
+  </g>
+
 
 </svg>
 
@@ -812,13 +875,25 @@ const CONFIG = {
     ORIGIN_CY: 530,   // zoom-origin dot center Y
   },
 
+  // ── QR code placement (bottom-left panel) ─────────────────────
+  // Keep this in unused lower-left space so it doesn't cover labels or diagrams.
+  QR_CODE: {
+    x: 230,
+    y: 734,
+    size: 130,
+    panelPadding: 10,
+    labelGap: 16,
+    labelWidth: 190,
+    labelHeight: 58,
+  },
+
 };
 // ================================================================
 
 
 window.addEventListener('DOMContentLoaded', () => {
   const { BORDER_THICKNESS: T, NOTCH_WIDTH: NW, NOTCH_HEIGHT: NH,
-          NOTCH_RADIUS: NR, GEYSER_X, BOTTOM_IMAGE, TOP_IMAGE } = CONFIG;
+          NOTCH_RADIUS: NR, GEYSER_X, BOTTOM_IMAGE, TOP_IMAGE, QR_CODE } = CONFIG;
   const W = 1400, H = 900;
   const GEYSER_DEFAULT_X = 934; // original design axis — don't change this
 
@@ -873,6 +948,66 @@ window.addEventListener('DOMContentLoaded', () => {
     el.setAttribute('width', TOP_IMAGE.width);
     el.setAttribute('height', TOP_IMAGE.height);
   });
+
+  // ── Apply QR code panel placement ──────────────────────────────
+  const qrPanelBg = document.getElementById('qrPanelBg');
+  const qrCodeImage = document.getElementById('qrCodeImage');
+  const qrClipRect = document.getElementById('qrClipRect');
+  const qrLabelBg = document.getElementById('qrLabelBg');
+  const qrLabelInner = document.getElementById('qrLabelInner');
+  const qrLabelIcon = document.getElementById('qrLabelIcon');
+  const qrLabelIconArrow = document.getElementById('qrLabelIconArrow');
+  const qrLabelEyebrow = document.getElementById('qrLabelEyebrow');
+  const qrLabelMain = document.getElementById('qrLabelMain');
+  if (qrPanelBg && qrCodeImage && qrClipRect && qrLabelBg && qrLabelInner &&
+      qrLabelIcon && qrLabelIconArrow && qrLabelEyebrow && qrLabelMain) {
+    const pad = QR_CODE.panelPadding;
+    const panelSize = QR_CODE.size + pad * 2;
+    const labelW = QR_CODE.labelWidth;
+    const labelH = QR_CODE.labelHeight;
+    const labelX = QR_CODE.x - QR_CODE.labelGap - labelW;
+    const labelY = QR_CODE.y + (QR_CODE.size - labelH) / 2;
+    const iconCx = labelX + 23;
+    const iconCy = labelY + labelH / 2;
+
+    qrLabelBg.setAttribute('x', labelX);
+    qrLabelBg.setAttribute('y', labelY);
+    qrLabelBg.setAttribute('width', labelW);
+    qrLabelBg.setAttribute('height', labelH);
+    qrLabelInner.setAttribute('x', labelX + 3);
+    qrLabelInner.setAttribute('y', labelY + 3);
+    qrLabelInner.setAttribute('width', labelW - 6);
+    qrLabelInner.setAttribute('height', labelH - 6);
+
+    qrLabelIcon.setAttribute('cx', iconCx);
+    qrLabelIcon.setAttribute('cy', iconCy);
+    qrLabelIconArrow.setAttribute(
+      'd',
+      `M${(iconCx - 4).toFixed(1)},${iconCy.toFixed(1)} L${(iconCx + 4).toFixed(1)},${iconCy.toFixed(1)} ` +
+      `M${(iconCx + 1).toFixed(1)},${(iconCy - 3).toFixed(1)} L${(iconCx + 4).toFixed(1)},${iconCy.toFixed(1)} ` +
+      `L${(iconCx + 1).toFixed(1)},${(iconCy + 3).toFixed(1)}`
+    );
+
+    qrLabelEyebrow.setAttribute('x', labelX + 40);
+    qrLabelEyebrow.setAttribute('y', labelY + 21);
+    qrLabelMain.setAttribute('x', labelX + 40);
+    qrLabelMain.setAttribute('y', labelY + 43);
+
+    qrPanelBg.setAttribute('x', QR_CODE.x - pad);
+    qrPanelBg.setAttribute('y', QR_CODE.y - pad);
+    qrPanelBg.setAttribute('width', panelSize);
+    qrPanelBg.setAttribute('height', panelSize);
+
+    qrCodeImage.setAttribute('x', QR_CODE.x);
+    qrCodeImage.setAttribute('y', QR_CODE.y);
+    qrCodeImage.setAttribute('width', QR_CODE.size);
+    qrCodeImage.setAttribute('height', QR_CODE.size);
+
+    qrClipRect.setAttribute('x', QR_CODE.x);
+    qrClipRect.setAttribute('y', QR_CODE.y);
+    qrClipRect.setAttribute('width', QR_CODE.size);
+    qrClipRect.setAttribute('height', QR_CODE.size);
+  }
 
   // ── Apply porous rock magnification overlay ────────────────────
   const { MAG_CX, MAG_CY, ORIGIN_CX, ORIGIN_CY } = CONFIG.POROUS_MAG;
